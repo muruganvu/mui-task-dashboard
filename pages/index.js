@@ -12,17 +12,26 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [employee, setEmployee] = useState("");
 
-  useEffect(() => {
-    fetch("/api/tasks").then(r => r.json()).then(setTasks);
-  }, []);
-  const deleteTask = async (id) => {
+ useEffect(() => {
+  fetch("/api/tasks")
+    .then(r => r.json())
+    .then(data => {
+      const normalized = data.map(t => ({
+        ...t,
+        id: t._id
+      }));
+      setTasks(normalized);
+    });
+}, []);
+const deleteTask = async (_id) => {
   if (!confirm("Delete this task?")) return;
 
-  await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+  await fetch(`/api/tasks/${_id}`, { method: "DELETE" });
 
   // update UI instantly
-  setTasks(tasks.filter(t => t.id !== id));
+  setTasks(prev => prev.filter(t => t._id !== _id));
 };
+
 
   const employees = [...new Set(tasks.map(t => t.employee))];
   const filtered = employee ? tasks.filter(t => t.employee === employee) : tasks;
@@ -99,7 +108,7 @@ const filteredByDate = selectedDate
           </TableHead>
           <TableBody>
             {filteredTasks.map(t => (
-              <TableRow key={t.id}>
+              <TableRow key={t._id}>
                 <TableCell>{t.date}</TableCell>
                  <TableCell>{t.employee}</TableCell>
                 <TableCell>{t.taskName}</TableCell>
@@ -119,12 +128,12 @@ const filteredByDate = selectedDate
 
                 <TableCell>{t.hours}</TableCell>
                 <TableCell>
-                  <IconButton color="error" href={`/edit-task/${t.id}`} component={Link}>
+                  <IconButton color="error" href={`/edit-task/${t._id}`} component={Link}>
                     <EditIcon />
                   </IconButton>
                  </TableCell>
                 <TableCell>
-                  <IconButton color="error" onClick={() => deleteTask(t.id)}>
+                  <IconButton color="error" onClick={() => deleteTask(t._id)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
