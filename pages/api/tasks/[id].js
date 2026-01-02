@@ -19,10 +19,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true }); 
   }
 
-  if (req.method === "DELETE") {
-    await collection.deleteOne({ _id: new ObjectId(id) });
-    return res.status(200).json({ success: true });
+ if (req.method === "DELETE") {
+    const result = await collection.deleteOne({
+      _id: new ObjectId(id)
+    });
+    return res.status(200).json({
+      deleted: result.deletedCount
+    });
   }
-
   res.status(405).end();
 }
